@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceFlow Pro | Gestão Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .premium-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+        }
+
+        .transaction-item {
+            animation: slideUp 0.4s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="antialiased min-h-screen pb-10">
+
+    <div class="max-w-lg mx-auto px-6 pt-10">
+        
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-extrabold tracking-tight text-slate-900">FinanceFlow</h1>
+                <p class="text-sm text-slate-500 font-medium">Sua conta, sob controle.</p>
+            </div>
+            <button onclick="clearData()" class="w-10 h-10 flex items-center justify-center rounded-2xl bg-white shadow-sm border border-slate-100 text-slate-400 hover:text-rose-500 transition-all">
+                <i class="bi bi-arrow-counterclockwise text-xl"></i>
+            </button>
+        </header>
+
+        <div class="premium-gradient rounded-[2.5rem] p-8 text-white shadow-2xl shadow-slate-300 mb-10 relative overflow-hidden">
+            <div class="relative z-10">
+                <span class="text-xs font-bold uppercase tracking-widest opacity-60">Saldo Total</span>
+                <div class="flex items-baseline gap-2 mt-1">
+                    <span class="text-2xl opacity-50">R$</span>
+                    <h2 id="display-saldo" class="text-5xl font-extrabold tracking-tighter">0,00</h2>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mt-10">
+                    <div class="bg-white/10 p-4 rounded-3xl backdrop-blur-md">
+                        <p class="text-[10px] uppercase font-bold opacity-60 mb-1">Entradas</p>
+                        <p id="display-entradas" class="font-bold text-emerald-400">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-3xl backdrop-blur-md">
+                        <p class="text-[10px] uppercase font-bold opacity-60 mb-1">Saídas</p>
+                        <p id="display-saidas" class="font-bold text-rose-400">R$ 0,00</p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-500 rounded-full blur-[80px] opacity-30"></div>
+        </div>
+
+        <div class="glass-card rounded-[2rem] p-6 shadow-xl shadow-slate-200/50 mb-10 border border-white">
+            <h3 class="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
+                <span class="w-2 h-2 bg-indigo-600 rounded-full"></span>
+                Nova Movimentação
+            </h3>
+            <form id="finance-form" class="space-y-4">
+                <input type="text" id="desc" placeholder="Ex: Assinatura Netflix" 
+                       class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-100 focus:bg-white outline-none transition-all font-medium" required>
+                
+                <div class="flex gap-3">
+                    <input type="number" id="valor" step="0.01" placeholder="Valor" 
+                           class="flex-1 p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-100 focus:bg-white outline-none transition-all font-bold" required>
+                    
+                    <select id="tipo" class="p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-indigo-100 focus:bg-white outline-none font-bold cursor-pointer transition-all">
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-100 transition-all active:scale-95">
+                    Registrar Transação
+                </button>
+            </form>
+        </div>
+
+        <div class="mb-12">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-slate-800 tracking-tight">Histórico Recente</h3>
+                <span id="items-count" class="text-[10px] font-black bg-slate-200 text-slate-500 px-2 py-1 rounded-lg uppercase">0 Itens</span>
+            </div>
+            <div id="lista-transacoes" class="space-y-3">
+                </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[2.5rem] p-8 border border-indigo-100 text-center relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="w-16 h-16 bg-white rounded-3xl shadow-sm flex items-center justify-center mx-auto mb-4 rotate-3">
+                    <i class="bi bi-heart-fill text-rose-500 text-2xl"></i>
+                </div>
+                <h4 class="text-lg font-extrabold text-slate-900">Gostou da ferramenta?</h4>
+                <p class="text-xs text-slate-500 font-medium mb-6 max-w-[200px] mx-auto leading-relaxed">
+                    Apoie nosso desenvolvimento contínuo através do <strong>Mercado Pago</strong>.
+                </p>
+                
+                <a href="https://mpago.la/1JzHEpL" target="_blank" 
+                   class="inline-flex items-center justify-center gap-3 bg-[#009EE3] hover:bg-[#0087c1] text-white font-bold py-4 px-10 rounded-2xl transition-all shadow-xl shadow-blue-200 active:scale-95 group">
+                    <i class="bi bi-wallet2 transition-transform group-hover:-rotate-12"></i>
+                    Apoiar via Mercado Pago
+                </a>
+                <p class="mt-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Plataforma de pagamento 100% segura</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let transacoes = JSON.parse(localStorage.getItem('finances_data')) || [];
+
+        const form = document.getElementById('finance-form');
+        const lista = document.getElementById('lista-transacoes');
+
+        function formatCurrency(val) {
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function updateUI() {
+            const entradas = transacoes.filter(t => t.tipo === 'entrada').reduce((acc, t) => acc + t.valor, 0);
+            const saidas = transacoes.filter(t => t.tipo === 'saida').reduce((acc, t) => acc + t.valor, 0);
+            const total = entradas - saidas;
+
+            document.getElementById('display-saldo').innerText = total.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            document.getElementById('display-entradas').innerText = formatCurrency(entradas);
+            document.getElementById('display-saidas').innerText = formatCurrency(saidas);
+            document.getElementById('items-count').innerText = `${transacoes.length} Itens`;
+
+            renderList();
+        }
+
+        function renderList() {
+            lista.innerHTML = '';
+            
+            if (transacoes.length === 0) {
+                lista.innerHTML = `<div class="text-center py-10 grayscale opacity-40"><i class="bi bi-journal-x text-3xl"></i><p class="text-xs font-bold mt-2">Nenhum registro</p></div>`;
+                return;
+            }
+
+            transacoes.forEach((t, i) => {
+                const isEntrada = t.tipo === 'entrada';
+                const item = document.createElement('div');
+                item.className = 'transaction-item glass-card p-5 rounded-3xl flex items-center justify-between border border-white shadow-sm hover:shadow-md transition-all';
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center ${isEntrada ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">
+                            <i class="bi ${isEntrada ? 'bi-plus-lg' : 'bi-dash-lg'} text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-slate-800 text-sm">${t.desc}</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">${t.date}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-extrabold ${isEntrada ? 'text-emerald-600' : 'text-slate-800'}">
+                            ${isEntrada ? '+' : '-'} ${formatCurrency(t.valor)}
+                        </span>
+                        <button onclick="deleteItem(${i})" class="text-slate-300 hover:text-rose-500 transition-colors">
+                            <i class="bi bi-trash3-fill"></i>
+                        </button>
+                    </div>
+                `;
+                lista.appendChild(item);
+            });
+        }
+
+        function deleteItem(index) {
+            transacoes.splice(index, 1);
+            save();
+        }
+
+        function clearData() {
+            if(confirm('Deseja apagar todos os dados?')) {
+                transacoes = [];
+                save();
+            }
+        }
+
+        function save() {
+            localStorage.setItem('finances_data', JSON.stringify(transacoes));
+            updateUI();
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const desc = document.getElementById('desc').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const tipo = document.getElementById('tipo').value;
+
+            if (valor <= 0) return alert('Insira um valor válido');
+
+            transacoes.unshift({
+                desc,
+                valor,
+                tipo,
+                date: new Date().toLocaleDateString('pt-br', { day: '2-digit', month: 'short' })
+            });
+
+            form.reset();
+            save();
+        });
+
+        // Inicializar
+        updateUI();
+    </script>
+</body>
+</html>
